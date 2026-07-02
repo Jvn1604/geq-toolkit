@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GEQ Toolkit — Researcher Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <div class="dash-topbar">
+    <div class="dash-topbar-inner">
+      <div class="dash-brand"><span class="dot"></span>GEQ Dashboard · <strong>Escape The Debt</strong></div>
+      <div class="dash-actions">
+        <a href="index.html" class="btn">← Participant view</a>
+        <button class="btn" id="exportAll">Export all (CSV)</button>
+        <button class="btn danger" id="clearAll">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="dash-main">
+    <div class="dash-header">
+      <div>
+        <div class="subtitle">Game Experience Study · Researcher view</div>
+        <h1>Response overview</h1>
+      </div>
+    </div>
+    <div id="dashBody"></div>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="js/geq-items.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

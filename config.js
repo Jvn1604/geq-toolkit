@@ -10,19 +10,25 @@ const STUDY_CONFIG = {
   researcher: "Jeeventhiran — Universiti Teknikal Malaysia Melaka (UTeM)",
   contactEmail: "jeeven1604@gmail.com",
 
+  // Hero background and logo shown on the welcome screen.
+  // Swap these out for your own game. Set to "" to fall back to plain text.
+  heroImage: "assets/hero-bg.png",
+  logoImage: "assets/game-logo.png",
+  tagline: "Learn today, live debt-free tomorrow.",
+
   // Which GEQ modules to run, in order.
   // Available: "core", "ingame", "social", "postgame"
-  // Note: "social" should only be enabled if the game involves
-  // co-players or meaningful in-game characters.
-  // Note: "ingame" is a short version of "core" meant for repeated
-  // measurement during play — most studies use core + postgame.
   modules: ["core", "postgame"],
 
   // Participant ID: "auto" generates one (P-xxxx), "ask" shows an input
   // so you can assign IDs yourself (recommended for controlled studies).
   participantId: "ask",
 
-  // Optional demographic questions shown before the questionnaire.
+  // Ask gender before the questionnaire. Options are fixed to Male / Female
+  // per the instrument sheet used at UTeM. Set to false to hide the field.
+  askGender: true,
+
+  // Additional optional demographics beyond ID + gender.
   // Set to [] to skip. type: "text" | "number" | "select"
   demographics: [
     { id: "age", label: "Age", type: "number" },
@@ -36,11 +42,16 @@ const STUDY_CONFIG = {
 
   // Optional: paste a Google Apps Script Web App URL here to send
   // each completed response to a Google Sheet automatically.
-  // Leave as "" to rely on the CSV/JSON download only.
   // Setup guide: see README.md → "Collecting responses remotely".
   webhookUrl: "",
 
   // Show participants their component scores at the end?
-  // Turn off if you don't want to influence discussion afterwards.
-  showResultsToParticipant: true
+  showResultsToParticipant: true,
+
+  // Save each completed response to the browser's localStorage so the
+  // researcher dashboard (dashboard.html) can visualise it. Recommended.
+  saveToDashboard: true,
+
+  // Passphrase to open dashboard.html. Set to "" for no passphrase.
+  dashboardPasscode: "utem2026"
 };

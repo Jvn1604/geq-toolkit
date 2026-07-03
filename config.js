@@ -43,7 +43,7 @@ const STUDY_CONFIG = {
   // Optional: paste a Google Apps Script Web App URL here to send
   // each completed response to a Google Sheet automatically.
   // Setup guide: see README.md → "Collecting responses remotely".
-  webhookUrl: "https://script.google.com/macros/s/AKfycbybbI-Mjo4yYqMFVHL0xuKqcok59CIKvKB2uKhIPYAgB0mrtElzZy2XPtnN3rBHWkColA/exec",
+  webhookUrl: " https://script.google.com/macros/s/AKfycbybbI-Mjo4yYqMFVHL0xuKqcok59CIKvKB2uKhIPYAgB0mrtElzZy2XPtnN3rBHWkColA/exec ",
 
   // Show participants their component scores at the end?
   showResultsToParticipant: true,

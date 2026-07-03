@@ -583,3 +583,27 @@ table.scores td.val {
   .card { padding: 18px; }
   .hero-panel { padding: 24px 20px; }
 }
+
+.credit-footer {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  z-index: 100;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 12px;
+  background: rgba(247, 236, 215, 0.08);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  user-select: none;
+  pointer-events: none;
+}
+
+body.hero-mode .credit-footer {
+  color: var(--muted-cream);
+  background: rgba(20, 16, 29, 0.6);
+  border-color: var(--line-dark);
+}

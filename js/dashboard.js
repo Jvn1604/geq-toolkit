@@ -1,8 +1,7 @@
 /* ============================================================
- * GEQ Toolkit — researcher dashboard
- * Reads responses from localStorage (auto-saved by the questionnaire)
- * plus any CSVs the researcher drops in. Renders 6 charts, a stat
- * bar, a filterable table, and export tools.
+ * GEQ Toolkit — researcher dashboard (FIXED)
+ * Reads responses from localStorage + CSV/JSON import
+ * FIXED: CSV import now reads ALL rows, not just the first
  * ============================================================ */
 
 (function () {
@@ -13,12 +12,10 @@
   let responses = [];
   let filter = { gender: "all" };
 
-  /* ---------- passcode gate ---------- */
   function gate() {
     if (!cfg.dashboardPasscode) { init(); return; }
     const ok = sessionStorage.getItem("geq_dash_unlocked") === "1";
     if (ok) { init(); return; }
-
     document.body.innerHTML = `
       <div class="gate">
         <form class="gate-panel" id="gateForm">
@@ -40,7 +37,6 @@
     });
   }
 
-  /* ---------- init ---------- */
   function init() {
     responses = loadFromLocal();
     render();
@@ -55,7 +51,6 @@
     localStorage.setItem(STORE_KEY, JSON.stringify(responses));
   }
 
-  /* ---------- filtering ---------- */
   function filtered() {
     return responses.filter((r) => {
       if (filter.gender !== "all" && r.gender !== filter.gender) return false;
@@ -63,7 +58,6 @@
     });
   }
 
-  /* ---------- render ---------- */
   function render() {
     const rs = filtered();
     if (responses.length === 0) {
@@ -108,7 +102,6 @@
     const avgDur = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0;
     const posAff = avgComponent(rs, "core", "Positive Affect");
     const negAff = avgComponent(rs, "core", "Negative Affect");
-
     return `<div class="stats-row">
       <div class="stat">
         <div class="label">Total participants</div>
@@ -135,36 +128,12 @@
 
   function renderCharts(rs) {
     return `<div class="chart-grid">
-      <div class="panel span-4">
-        <div class="kicker">01 · Radar (Minimal)</div>
-        <h3>GEQ core profile — component means</h3>
-        <div id="chart-radar"></div>
-      </div>
-      <div class="panel span-2">
-        <div class="kicker">02 · Gauge (Dual arc)</div>
-        <h3>Overall satisfaction</h3>
-        <div id="chart-gauge"></div>
-      </div>
-      <div class="panel span-4">
-        <div class="kicker">03 · Bar (Interactive)</div>
-        <h3>Component means across modules</h3>
-        <div id="chart-bar"></div>
-      </div>
-      <div class="panel span-2">
-        <div class="kicker">04 · Donut (Pie)</div>
-        <h3>Gender split</h3>
-        <div id="chart-donut"></div>
-      </div>
-      <div class="panel span-3">
-        <div class="kicker">05 · Ring (Legend)</div>
-        <h3>Post-game comparison</h3>
-        <div id="chart-ring"></div>
-      </div>
-      <div class="panel span-3">
-        <div class="kicker">06 · Funnel (Grid)</div>
-        <h3>Core components ranked high → low</h3>
-        <div id="chart-funnel"></div>
-      </div>
+      <div class="panel span-4"><div class="kicker">01 · Radar (Minimal)</div><h3>GEQ core profile — component means</h3><div id="chart-radar"></div></div>
+      <div class="panel span-2"><div class="kicker">02 · Gauge (Dual arc)</div><h3>Overall satisfaction</h3><div id="chart-gauge"></div></div>
+      <div class="panel span-4"><div class="kicker">03 · Bar (Interactive)</div><h3>Component means across modules</h3><div id="chart-bar"></div></div>
+      <div class="panel span-2"><div class="kicker">04 · Donut (Pie)</div><h3>Gender split</h3><div id="chart-donut"></div></div>
+      <div class="panel span-3"><div class="kicker">05 · Ring (Legend)</div><h3>Post-game comparison</h3><div id="chart-ring"></div></div>
+      <div class="panel span-3"><div class="kicker">06 · Funnel (Grid)</div><h3>Core components ranked high → low</h3><div id="chart-funnel"></div></div>
     </div>`;
   }
 
@@ -187,7 +156,6 @@
         </td>
       </tr>`;
     }).join("");
-
     return `<div class="chart-grid"><div class="panel table-panel">
       <div class="kicker">Participants</div>
       <h3 style="margin-bottom:16px">All responses</h3>
@@ -209,7 +177,6 @@
     </div>`;
   }
 
-  /* ---------- draw charts ---------- */
   function drawAllCharts(rs) {
     if (rs.length === 0) return;
     drawRadar(rs);
@@ -231,7 +198,6 @@
   function drawGauge(rs) {
     const container = document.getElementById("chart-gauge");
     if (!container) return;
-    // "Overall satisfaction" = mean of Positive Affect + Flow + Competence, minus Negative Affect
     const pos = avgComponent(rs, "core", "Positive Affect") || 0;
     const flow = avgComponent(rs, "core", "Flow") || 0;
     const comp = avgComponent(rs, "core", "Competence") || 0;
@@ -295,13 +261,13 @@
     Charts.funnel(container, data);
   }
 
-  /* ---------- helpers ---------- */
   function avgComponent(rs, mod, comp) {
     const vals = rs.map((r) => r.component_scores && r.component_scores[mod] && r.component_scores[mod][comp])
       .filter((v) => typeof v === "number");
     if (!vals.length) return NaN;
     return vals.reduce((a, b) => a + b, 0) / vals.length;
   }
+
   function shortLabel(c) {
     return c
       .replace("Sensory and Imaginative Immersion", "Immersion")
@@ -313,13 +279,13 @@
       .replace("Negative Experience", "Neg. Experience")
       .replace("Positive Experience", "Pos. Experience");
   }
+
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"]/g, (c) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])
     );
   }
 
-  /* ---------- table actions ---------- */
   function setupTableActions() {
     document.querySelectorAll("[data-action]").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -339,7 +305,55 @@
     });
   }
 
-  /* ---------- import ---------- */
+  // ===== FIXED CSV IMPORT: Now reads ALL rows, not just first =====
+  function csvToRecords(text) {
+    // Returns ARRAY of records (fixed: was only returning first row)
+    const lines = text.trim().split(/\r?\n/);
+    if (lines.length < 2) return [];
+    
+    const header = parseCsvLine(lines[0]);
+    const records = [];
+    
+    // Loop through ALL data rows
+    for (let lineIdx = 1; lineIdx < lines.length; lineIdx++) {
+      const values = parseCsvLine(lines[lineIdx]);
+      if (values.every(v => !v.trim())) continue; // skip empty rows
+      
+      const map = {};
+      header.forEach((h, i) => (map[h] = values[i]));
+
+      const rec = {
+        participant_id: map.participant_id,
+        gender: map.gender || "",
+        game: map.game || "",
+        started_at: map.started_at,
+        finished_at: map.finished_at,
+        duration_seconds: Number(map.duration_seconds || 0),
+        demographics: {},
+        answers: {},
+        component_scores: {}
+      };
+
+      for (const key in map) {
+        if (key.startsWith("demo_")) rec.demographics[key.slice(5)] = map[key];
+        else if (/^(core|ingame|social|postgame)_item\d+$/.test(key)) {
+          const m = key.match(/^(\w+)_item(\d+)$/);
+          rec.answers[m[1]] = rec.answers[m[1]] || [];
+          rec.answers[m[1]][Number(m[2]) - 1] = Number(map[key]);
+        } else if (/^(core|ingame|social|postgame)_score_/.test(key)) {
+          const m = key.match(/^(\w+)_score_(.+)$/);
+          const compName = restoreCompName(m[1], m[2]);
+          rec.component_scores[m[1]] = rec.component_scores[m[1]] || {};
+          rec.component_scores[m[1]][compName] = Number(map[key]);
+        }
+      }
+      
+      records.push(rec);
+    }
+    
+    return records;
+  }
+
   function setupImportZone() {
     const zone = document.getElementById("importZone");
     if (!zone) return;
@@ -354,6 +368,7 @@
     input.addEventListener("change", () => handleFiles(input.files));
   }
 
+  // ===== FIXED handleFiles: Process ALL records from CSV =====
   function handleFiles(files) {
     let added = 0;
     Array.from(files).forEach((f) => {
@@ -361,11 +376,21 @@
       reader.onload = () => {
         try {
           const text = reader.result;
-          const rec = f.name.endsWith(".json") ? JSON.parse(text) : csvToRecord(text);
-          if (rec && rec.participant_id) {
-            responses = responses.filter((r) => r.participant_id !== rec.participant_id);
-            responses.push(rec);
-            added += 1;
+          // FIXED: csvToRecords returns array; JSON returns single object wrapped in array
+          const recs = f.name.endsWith(".json")
+            ? [JSON.parse(text)]
+            : csvToRecords(text);
+          
+          // Process ALL records
+          recs.forEach((rec) => {
+            if (rec && rec.participant_id) {
+              responses = responses.filter((r) => r.participant_id !== rec.participant_id);
+              responses.push(rec);
+              added += 1;
+            }
+          });
+          
+          if (added > 0) {
             saveToLocal();
             render();
           }
@@ -375,44 +400,7 @@
     });
   }
 
-  function csvToRecord(text) {
-    const lines = text.trim().split(/\r?\n/);
-    if (lines.length < 2) return null;
-    const header = parseCsvLine(lines[0]);
-    const values = parseCsvLine(lines[1]);
-    const map = {};
-    header.forEach((h, i) => (map[h] = values[i]));
-
-    const rec = {
-      participant_id: map.participant_id,
-      gender: map.gender || "",
-      game: map.game || "",
-      started_at: map.started_at,
-      finished_at: map.finished_at,
-      duration_seconds: Number(map.duration_seconds || 0),
-      demographics: {},
-      answers: {},
-      component_scores: {}
-    };
-
-    for (const key in map) {
-      if (key.startsWith("demo_")) rec.demographics[key.slice(5)] = map[key];
-      else if (/^(core|ingame|social|postgame)_item\d+$/.test(key)) {
-        const m = key.match(/^(\w+)_item(\d+)$/);
-        rec.answers[m[1]] = rec.answers[m[1]] || [];
-        rec.answers[m[1]][Number(m[2]) - 1] = Number(map[key]);
-      } else if (/^(core|ingame|social|postgame)_score_/.test(key)) {
-        const m = key.match(/^(\w+)_score_(.+)$/);
-        const compName = restoreCompName(m[1], m[2]);
-        rec.component_scores[m[1]] = rec.component_scores[m[1]] || {};
-        rec.component_scores[m[1]][compName] = Number(map[key]);
-      }
-    }
-    return rec;
-  }
-
   function restoreCompName(mod, slug) {
-    // Match slugified component names back to canonical ones from GEQ_MODULES.
     if (!GEQ_MODULES[mod]) return slug;
     for (const c of Object.keys(GEQ_MODULES[mod].components)) {
       if (c.replace(/[^A-Za-z]+/g, "_") === slug) return c;
@@ -439,7 +427,6 @@
     return out;
   }
 
-  /* ---------- exports ---------- */
   function recordToCsv(rec) {
     const header = ["participant_id", "gender", "game", "started_at", "finished_at", "duration_seconds"];
     const row = [rec.participant_id, rec.gender, rec.game, rec.started_at, rec.finished_at, rec.duration_seconds];
@@ -457,7 +444,6 @@
 
   function exportAll() {
     if (!responses.length) return alert("No responses to export.");
-    // union of all columns
     const cols = new Set(["participant_id", "gender", "game", "started_at", "finished_at", "duration_seconds"]);
     responses.forEach((r) => {
       for (const k in (r.demographics || {})) cols.add("demo_" + k);

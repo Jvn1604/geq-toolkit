@@ -86,7 +86,8 @@
     const idField =
       cfg.participantId === "ask"
         ? `<label class="field">Participant ID (given by the researcher)
-             <input type="text" id="pid" placeholder="e.g. P01" autocomplete="off"></label>`
+             <input type="text" id="pid" placeholder="e.g. P01" autocomplete="off">
+             <span class="field-hint">Type this SAME ID as your player name inside the game.</span></label>`
         : "";
 
     const logo = cfg.logoImage
@@ -137,7 +138,8 @@
 
   function handleStart() {
     if (cfg.participantId === "ask") {
-      const v = document.getElementById("pid").value.trim();
+      let v = document.getElementById("pid").value.trim().toUpperCase();
+      v = v.replace(/^P?O(?=\d)/, "P0");   // fixes PO1 -> P01 (letter O vs zero)
       if (!v) { alert("Please enter your Participant ID."); return; }
       state.participantId = v;
     } else {

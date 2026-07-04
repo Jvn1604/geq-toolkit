@@ -607,3 +607,10 @@ body.hero-mode .credit-footer {
   background: rgba(20, 16, 29, 0.6);
   border-color: var(--line-dark);
 }
+/* hint under the Participant ID input (links GEQ ID to in-game player name) */
+.field-hint {
+  display: block;
+  font-size: 12px;
+  color: #8da0b2;
+  margin-top: 4px;
+}

@@ -1,6 +1,6 @@
 # GEQ Toolkit
 
-An open-source, zero-backend web implementation of the **Game Experience Questionnaire (GEQ)** by IJsselsteijn, de Kort & Poels (2013) — for anyone running playtests or game user research.
+An open-source, zero-backend web implementation of the **Game Experience Questionnaire (GEQ)** by IJsselsteijn, de Kort & Poels (2013) — for anyone running playtests or game user research...
 
 Two pages, no server:
 

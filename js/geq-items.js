@@ -1,169 +1,104 @@
 /* ============================================================
- * GEQ Item Bank & Scoring Definitions
- * Source: IJsselsteijn, W.A., de Kort, Y.A.W., & Poels, K. (2013).
- * The Game Experience Questionnaire. Technische Universiteit Eindhoven.
- * Do not edit item wording — validity of the instrument depends on it.
+ * Escape the Debt — Debt Management Awareness Questionnaire
+ * Item bank & scoring definitions.
+ * Instrument: "Escape the Debt – Debt Management Awareness"
+ * (custom instrument, UTeM Final Year Project, Jeeventhiran).
+ * Scale: 1 Strongly Disagree .. 5 Strongly Agree.
+ * Do not edit item wording — keep it identical to the paper form
+ * so paper and digital responses stay comparable.
  * ============================================================ */
 
 const GEQ_SCALE = [
-  { value: 0, label: "not at all" },
-  { value: 1, label: "slightly" },
-  { value: 2, label: "moderately" },
-  { value: 3, label: "fairly" },
-  { value: 4, label: "extremely" }
+  { value: 1, label: "strongly disagree" },
+  { value: 2, label: "disagree" },
+  { value: 3, label: "neutral" },
+  { value: 4, label: "agree" },
+  { value: 5, label: "strongly agree" }
 ];
 
 const GEQ_MODULES = {
-  core: {
-    id: "core",
-    name: "Core Module",
+  learning_engagement: {
+    id: "learning_engagement",
+    name: "Section A: Learning Engagement",
     instruction:
-      "Please indicate how you felt while playing the game for each of the items.",
+      "Please indicate how much you agree with each statement about your experience playing Escape the Debt.",
     items: [
-      "I felt content",
-      "I felt skilful",
-      "I was interested in the game's story",
-      "I thought it was fun",
-      "I was fully occupied with the game",
-      "I felt happy",
-      "It gave me a bad mood",
-      "I thought about other things",
-      "I found it tiresome",
-      "I felt competent",
-      "I thought it was hard",
-      "It was aesthetically pleasing",
-      "I forgot everything around me",
-      "I felt good",
-      "I was good at it",
-      "I felt bored",
-      "I felt successful",
-      "I felt imaginative",
-      "I felt that I could explore things",
-      "I enjoyed it",
-      "I was fast at reaching the game's targets",
-      "I felt annoyed",
-      "I felt pressured",
-      "I felt irritable",
-      "I lost track of time",
-      "I felt challenged",
-      "I found it impressive",
-      "I was deeply concentrated in the game",
-      "I felt frustrated",
-      "It felt like a rich experience",
-      "I lost connection with the outside world",
-      "I felt time pressure",
-      "I had to put a lot of effort into it"
+      "The game helped me understand how debt affects financial decisions.",
+      "I found debt management puzzles helpful for learning financial concepts.",
+      "The game made me more aware of the consequences of poor financial choices.",
+      "I was motivated to complete the puzzles to learn about debt management.",
+      "The game's feedback systems helped me understand the outcomes of financial decisions."
     ],
-    // Item numbers are 1-based, matching the published scoring guidelines.
     components: {
-      "Competence": [2, 10, 15, 17, 21],
-      "Sensory and Imaginative Immersion": [3, 12, 18, 19, 27, 30],
-      "Flow": [5, 13, 25, 28, 31],
-      "Tension/Annoyance": [22, 24, 29],
-      "Challenge": [11, 23, 26, 32, 33],
-      "Negative Affect": [7, 8, 9, 16],
-      "Positive Affect": [1, 4, 6, 14, 20]
+      "Learning Engagement": [1, 2, 3, 4, 5]
     }
   },
 
-  ingame: {
-    id: "ingame",
-    name: "In-game Module",
+  financial_knowledge: {
+    id: "financial_knowledge",
+    name: "Section B: Financial Knowledge and Concepts",
     instruction:
-      "Please indicate how you felt while playing the game for each of the items.",
+      "Please indicate how much you agree with each statement about your financial knowledge.",
     items: [
-      "I was interested in the game's story",
-      "I felt successful",
-      "I felt bored",
-      "I found it impressive",
-      "I forgot everything around me",
-      "I felt frustrated",
-      "I found it tiresome",
-      "I felt irritable",
-      "I felt skilful",
-      "I felt completely absorbed",
-      "I felt content",
-      "I felt challenged",
-      "I had to put a lot of effort into it",
-      "I felt good"
+      "I understand that paying only the minimum payment on a credit card allows the debt to grow through compound interest.",
+      "I understand that PTPTN loans in Malaysia are government-funded education loans with repayment obligations after graduation.",
+      "Using BNPL repeatedly on different platforms can put me at risk of financial difficulties.",
+      "I understand that the amount of credit I use compared to my available credit can affect my financial health.",
+      "I understand that using BNPL from several platforms can make it difficult to keep track of my total payments.",
+      "I know that unpaid debt can grow quickly when interest continues to accumulate, especially when the interest rate is high.",
+      "When I have several debts, I believe it is better to pay the debt with the highest interest rate first.",
+      "I understand that paying off high-interest debt first can help me save money in the long term.",
+      "I understand that financial stress can affect my ability to make good financial decisions.",
+      "I can distinguish between things I need and things I want when deciding how to spend my money.",
+      "BNPL may seem affordable because I can pay later, but it can encourage me to spend more than I can afford.",
+      "I understand that managing debt effectively requires me to keep track of my income, expenses, and debt payments.",
+      "I understand that having an emergency fund can help me avoid taking on new debt when unexpected expenses occur."
     ],
     components: {
-      "Competence": [2, 9],
-      "Sensory and Imaginative Immersion": [1, 4],
-      "Flow": [5, 10],
-      "Tension": [6, 8],
-      "Challenge": [12, 13],
-      "Negative Affect": [3, 7],
-      "Positive Affect": [11, 14]
+      "Financial Knowledge and Concepts": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     }
   },
 
-  social: {
-    id: "social",
-    name: "Social Presence Module",
+  financial_decision_making: {
+    id: "financial_decision_making",
+    name: "Section C: Financial Decision Making",
     instruction:
-      "Please indicate how you felt while playing the game for each of the items. " +
-      "\u201cThe other(s)\u201d refers to in-game characters, online co-players, or people playing with you.",
+      "Please indicate how much you agree with each statement about your financial decision-making.",
     items: [
-      "I empathized with the other(s)",
-      "My actions depended on the other(s) actions",
-      "The other's actions were dependent on my actions",
-      "I felt connected to the other(s)",
-      "The other(s) paid close attention to me",
-      "I paid close attention to the other(s)",
-      "I felt jealous about the other(s)",
-      "I found it enjoyable to be with the other(s)",
-      "When I was happy, the other(s) was(were) happy",
-      "When the other(s) was(were) happy, I was happy",
-      "I influenced the mood of the other(s)",
-      "I was influenced by the other(s) moods",
-      "I admired the other(s)",
-      "What the other(s) did affected what I did",
-      "What I did affected what the other(s) did",
-      "I felt revengeful",
-      "I felt schadenfreude (malicious delight)"
+      "I feel confident making decisions about which debts to prioritize based on interest rates and risk.",
+      "I can recognize when a financial opportunity (like BNPL) is a potential trap rather than a genuine solution.",
+      "I feel confident explaining the consequences of credit card debt to someone unfamiliar with financial concepts.",
+      "I understand how to create and follow a budget that allows me to repay debt responsibly.",
+      "I feel prepared to make financially responsible decisions in real-life situations similar to those in the game."
     ],
     components: {
-      "Psychological Involvement \u2013 Empathy": [1, 4, 8, 9, 10, 13],
-      "Psychological Involvement \u2013 Negative Feelings": [7, 11, 12, 16, 17],
-      "Behavioural Involvement": [2, 3, 5, 6, 14, 15]
+      "Financial Decision Making": [1, 2, 3, 4, 5]
     }
   },
 
-  postgame: {
-    id: "postgame",
-    name: "Post-game Module",
+  learning_outcomes: {
+    id: "learning_outcomes",
+    name: "Section D: Learning Outcomes and Behavioral Awareness",
     instruction:
-      "Please indicate how you felt after you finished playing the game for each of the items.",
+      "Please indicate how much you agree with each statement about what you took away from the game.",
     items: [
-      "I felt revived",
-      "I felt bad",
-      "I found it hard to get back to reality",
-      "I felt guilty",
-      "It felt like a victory",
-      "I found it a waste of time",
-      "I felt energised",
-      "I felt satisfied",
-      "I felt disoriented",
-      "I felt exhausted",
-      "I felt that I could have done more useful things",
-      "I felt powerful",
-      "I felt weary",
-      "I felt regret",
-      "I felt ashamed",
-      "I felt proud",
-      "I had a sense that I had returned from a journey"
+      "After playing the game, I understand the real consequences of not repaying PTPTN loans on time.",
+      "The game taught me how compound interest on credit card debt can trap users in long-term repayment cycles.",
+      "I now recognize BNPL services as a potential financial risk if overused without planning.",
+      "I feel more confident making responsible financial decisions about borrowing and spending.",
+      "I intend to apply the debt management strategies I learned from the game in my real life.",
+      "The game increased my awareness that financial decisions have long-term consequences on stability.",
+      "I now understand the importance of prioritizing high-interest debt before accumulating new debt.",
+      "I believe that stress management and financial stability are directly connected.",
+      "The game helped me realize how easy it is to become trapped by multiple debts if decisions are not carefully managed."
     ],
     components: {
-      "Positive Experience": [1, 5, 7, 8, 12, 16],
-      "Negative Experience": [2, 4, 6, 11, 14, 15],
-      "Tiredness": [10, 13],
-      "Returning to Reality": [3, 9, 17]
+      "Learning Outcomes and Behavioral Awareness": [1, 2, 3, 4, 5, 6, 7, 8, 9]
     }
   }
 };
 
-/* Component score = mean of its items (per the published scoring guidelines). */
+/* Component score = mean of its items (1-5 scale). */
 function scoreModule(moduleId, answers) {
   const mod = GEQ_MODULES[moduleId];
   const scores = {};

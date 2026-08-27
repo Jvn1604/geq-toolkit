@@ -6,7 +6,7 @@
 const STUDY_CONFIG = {
   // Shown to participants on the welcome screen.
   gameName: "Escape The Debt",
-  studyTitle: "Game Experience Study",
+  studyTitle: "Debt Management Awareness Study",
   researcher: "Jeeventhiran — Universiti Teknikal Malaysia Melaka (UTeM)",
   contactEmail: "jeeven1604@gmail.com",
 
@@ -16,9 +16,15 @@ const STUDY_CONFIG = {
   logoImage: "assets/game-logo.png",
   tagline: "Learn today, live debt-free tomorrow.",
 
-  // Which GEQ modules to run, in order.
-  // Available: "core", "ingame", "social", "postgame"
-  modules: ["core", "postgame"],
+  // Which questionnaire sections to run, in order.
+  // Available: "learning_engagement", "financial_knowledge",
+  // "financial_decision_making", "learning_outcomes"
+  modules: [
+    "learning_engagement",
+    "financial_knowledge",
+    "financial_decision_making",
+    "learning_outcomes"
+  ],
 
   // Participant ID: "auto" generates one (P-xxxx), "ask" shows an input
   // so you can assign IDs yourself (recommended for controlled studies).

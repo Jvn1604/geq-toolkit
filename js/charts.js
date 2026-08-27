@@ -72,8 +72,8 @@ Charts.bar = function (container, data, opts) {
   const barH = Math.max(14, step - 10);
 
   const gridLines = [];
-  for (let i = 0; i <= 4; i++) {
-    const x = padL + (i / 4) * plotW;
+  for (let i = 0; i <= max; i++) {
+    const x = padL + (i / max) * plotW;
     gridLines.push(`<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + plotH}" stroke="${CHART_THEME.grid}" stroke-width="1"/>`);
     gridLines.push(`<text x="${x}" y="${H - 6}" text-anchor="middle" fill="${CHART_THEME.muted}" font-family="IBM Plex Mono" font-size="10">${i}</text>`);
   }
@@ -260,8 +260,9 @@ Charts.radar = function (container, data, opts) {
   const n = data.length;
 
   // grid rings
-  const rings = [1, 2, 3, 4].map((k) => {
-    const rr = (k / 4) * r;
+  const ringCount = Math.round(max);
+  const rings = Array.from({ length: ringCount }, (_, i) => i + 1).map((k) => {
+    const rr = (k / max) * r;
     return `<circle cx="${cx}" cy="${cy}" r="${rr}" fill="none" stroke="${CHART_THEME.grid}" stroke-width="1"/>`;
   }).join("");
 

@@ -112,11 +112,11 @@
             <p class="hero-eyebrow">${esc(cfg.studyTitle)}</p>
             <h1 class="hero-title">How was your experience with <em>${esc(cfg.gameName)}</em>?</h1>
             ${tagline}
-            <p class="hero-lede">You'll rate a series of short statements about how you felt while playing. There are no right or wrong answers — please answer honestly. It takes about 5–10 minutes, and your responses are used for research only.</p>
+            <p class="hero-lede">You'll rate how much you agree with a series of statements about debt management and your experience with the game. There are no right or wrong answers — please answer honestly. It takes about 5–10 minutes, and your responses are used for research only.</p>
             <div class="hero-meta">
               <div><strong>5–10 min</strong>Estimated time</div>
               <div><strong>${cfg.modules.length}</strong>Section${cfg.modules.length > 1 ? "s" : ""}</div>
-              <div><strong>0–4</strong>Rating scale</div>
+              <div><strong>1–5</strong>Rating scale</div>
             </div>
           </div>
           <div class="hero-panel">
@@ -240,7 +240,7 @@
             .map(
               ([comp, val]) => `<tr>
                 <td>${esc(comp)}</td>
-                <td><div class="bar"><i style="width:${(val / 4) * 100}%"></i></div></td>
+                <td><div class="bar"><i style="width:${((val - 1) / 4) * 100}%"></i></div></td>
                 <td class="val">${val.toFixed(2)}</td>
               </tr>`
             )
@@ -248,7 +248,7 @@
           return `<div class="card">
             <h2 style="font-family:var(--font-display);margin:0 0 8px">${esc(GEQ_MODULES[modId].name)}</h2>
             <table class="scores">
-              <tr><th>Component</th><th style="width:45%"></th><th>0–4</th></tr>
+              <tr><th>Component</th><th style="width:45%"></th><th>1–5</th></tr>
               ${rows}
             </table>
           </div>`;

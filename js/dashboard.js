@@ -1,7 +1,9 @@
 /* ============================================================
- * GEQ Toolkit — researcher dashboard (FIXED)
- * Reads responses from localStorage + CSV/JSON import
- * FIXED: CSV import now reads ALL rows, not just the first
+ * Escape the Debt — researcher dashboard
+ * Reads responses from localStorage + CSV/JSON import.
+ * Built around the debt-awareness questionnaire's four sections:
+ * learning_engagement, financial_knowledge,
+ * financial_decision_making, learning_outcomes.
  * ============================================================ */
 
 (function () {
@@ -9,6 +11,7 @@
 
   const cfg = STUDY_CONFIG;
   const STORE_KEY = "geq_responses_v1";
+  const MODULE_IDS = ["learning_engagement", "financial_knowledge", "financial_decision_making", "learning_outcomes"];
   let responses = [];
   let filter = { gender: "all" };
 
@@ -100,8 +103,8 @@
     const total = rs.length;
     const durations = rs.map((r) => r.duration_seconds).filter((x) => x > 0);
     const avgDur = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0;
-    const posAff = avgComponent(rs, "core", "Positive Affect");
-    const negAff = avgComponent(rs, "core", "Negative Affect");
+    const knowledge = avgComponent(rs, "financial_knowledge", "Financial Knowledge and Concepts");
+    const outcomes = avgComponent(rs, "learning_outcomes", "Learning Outcomes and Behavioral Awareness");
     return `<div class="stats-row">
       <div class="stat">
         <div class="label">Total participants</div>
@@ -114,41 +117,41 @@
         <div class="caption">time on task</div>
       </div>
       <div class="stat">
-        <div class="label">Positive affect</div>
-        <div class="value">${isFinite(posAff) ? posAff.toFixed(2) : "—"}<small>/ 4</small></div>
-        <div class="caption">avg core score</div>
+        <div class="label">Financial knowledge</div>
+        <div class="value">${isFinite(knowledge) ? knowledge.toFixed(2) : "—"}<small>/ 5</small></div>
+        <div class="caption">avg Section B score</div>
       </div>
       <div class="stat">
-        <div class="label">Negative affect</div>
-        <div class="value">${isFinite(negAff) ? negAff.toFixed(2) : "—"}<small>/ 4</small></div>
-        <div class="caption">avg core score</div>
+        <div class="label">Learning outcomes</div>
+        <div class="value">${isFinite(outcomes) ? outcomes.toFixed(2) : "—"}<small>/ 5</small></div>
+        <div class="caption">avg Section D score</div>
       </div>
     </div>`;
   }
 
   function renderCharts(rs) {
     return `<div class="chart-grid">
-      <div class="panel span-4"><div class="kicker">01 · Radar (Minimal)</div><h3>GEQ core profile — component means</h3><div id="chart-radar"></div></div>
-      <div class="panel span-2"><div class="kicker">02 · Gauge (Dual arc)</div><h3>Overall satisfaction</h3><div id="chart-gauge"></div></div>
-      <div class="panel span-4"><div class="kicker">03 · Bar (Interactive)</div><h3>Component means across modules</h3><div id="chart-bar"></div></div>
+      <div class="panel span-4"><div class="kicker">01 · Radar (Minimal)</div><h3>Debt awareness profile — section means</h3><div id="chart-radar"></div></div>
+      <div class="panel span-2"><div class="kicker">02 · Gauge (Dual arc)</div><h3>Overall debt awareness index</h3><div id="chart-gauge"></div></div>
+      <div class="panel span-4"><div class="kicker">03 · Bar (Interactive)</div><h3>Financial knowledge — item means (Section B)</h3><div id="chart-bar"></div></div>
       <div class="panel span-2"><div class="kicker">04 · Donut (Pie)</div><h3>Gender split</h3><div id="chart-donut"></div></div>
-      <div class="panel span-3"><div class="kicker">05 · Ring (Legend)</div><h3>Post-game comparison</h3><div id="chart-ring"></div></div>
-      <div class="panel span-3"><div class="kicker">06 · Funnel (Grid)</div><h3>Core components ranked high → low</h3><div id="chart-funnel"></div></div>
+      <div class="panel span-3"><div class="kicker">05 · Ring (Legend)</div><h3>Learning outcomes — item means (Section D)</h3><div id="chart-ring"></div></div>
+      <div class="panel span-3"><div class="kicker">06 · Funnel (Grid)</div><h3>Decision-making confidence, ranked (Section C)</h3><div id="chart-funnel"></div></div>
     </div>`;
   }
 
   function renderTable(rs) {
     const rows = rs.slice().reverse().map((r) => {
-      const posAff = r.component_scores && r.component_scores.core && r.component_scores.core["Positive Affect"];
-      const flow = r.component_scores && r.component_scores.core && r.component_scores.core["Flow"];
+      const knowledge = r.component_scores && r.component_scores.financial_knowledge && r.component_scores.financial_knowledge["Financial Knowledge and Concepts"];
+      const outcomes = r.component_scores && r.component_scores.learning_outcomes && r.component_scores.learning_outcomes["Learning Outcomes and Behavioral Awareness"];
       return `<tr>
         <td class="mono">${esc(r.participant_id)}</td>
         <td>${esc(r.gender || "—")}</td>
         <td class="mono">${esc(r.demographics && r.demographics.age || "—")}</td>
         <td>${esc(r.demographics && r.demographics.gaming_freq || "—")}</td>
         <td class="mono">${new Date(r.finished_at).toLocaleString()}</td>
-        <td class="mono">${posAff !== undefined ? posAff.toFixed(2) : "—"}</td>
-        <td class="mono">${flow !== undefined ? flow.toFixed(2) : "—"}</td>
+        <td class="mono">${knowledge !== undefined ? knowledge.toFixed(2) : "—"}</td>
+        <td class="mono">${outcomes !== undefined ? outcomes.toFixed(2) : "—"}</td>
         <td class="row-actions">
           <button data-action="csv" data-id="${esc(r.participant_id)}">CSV</button>
           <button data-action="json" data-id="${esc(r.participant_id)}">JSON</button>
@@ -162,7 +165,7 @@
       <div style="overflow-x:auto"><table class="data">
         <thead><tr>
           <th>ID</th><th>Gender</th><th>Age</th><th>Gaming</th>
-          <th>Finished</th><th>Pos. affect</th><th>Flow</th><th></th>
+          <th>Finished</th><th>Knowledge (B)</th><th>Outcomes (D)</th><th></th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table></div>
@@ -187,40 +190,36 @@
     drawFunnel(rs);
   }
 
+  function sectionMean(rs, modId) {
+    const mod = GEQ_MODULES[modId];
+    if (!mod) return NaN;
+    const compName = Object.keys(mod.components)[0];
+    return avgComponent(rs, modId, compName);
+  }
+
   function drawRadar(rs) {
     const container = document.getElementById("chart-radar");
     if (!container) return;
-    const comps = Object.keys(GEQ_MODULES.core.components);
-    const data = comps.map((c) => ({ label: shortLabel(c), value: avgComponent(rs, "core", c) || 0 }));
-    Charts.radar(container, data, { max: 4 });
+    const data = MODULE_IDS.map((modId) => ({
+      label: shortLabel(GEQ_MODULES[modId].name.replace(/^Section [A-D]: /, "")),
+      value: sectionMean(rs, modId) || 0
+    }));
+    Charts.radar(container, data, { max: 5 });
   }
 
   function drawGauge(rs) {
     const container = document.getElementById("chart-gauge");
     if (!container) return;
-    const pos = avgComponent(rs, "core", "Positive Affect") || 0;
-    const flow = avgComponent(rs, "core", "Flow") || 0;
-    const comp = avgComponent(rs, "core", "Competence") || 0;
-    const neg = avgComponent(rs, "core", "Negative Affect") || 0;
-    const overall = Math.max(0, Math.min(4, (pos + flow + comp) / 3 - neg * 0.3));
-    Charts.gauge(container, overall, { max: 4, label: "Composite index" });
+    const means = MODULE_IDS.map((modId) => sectionMean(rs, modId)).filter((v) => isFinite(v));
+    const overall = means.length ? means.reduce((a, b) => a + b, 0) / means.length : 0;
+    Charts.gauge(container, overall, { max: 5, label: "Composite index" });
   }
 
   function drawBar(rs) {
     const container = document.getElementById("chart-bar");
     if (!container) return;
-    const data = [];
-    const modules = new Set();
-    rs.forEach((r) => Object.keys(r.component_scores || {}).forEach((m) => modules.add(m)));
-    modules.forEach((mod) => {
-      if (!GEQ_MODULES[mod]) return;
-      Object.keys(GEQ_MODULES[mod].components).forEach((c) => {
-        const v = avgComponent(rs, mod, c);
-        if (isFinite(v)) data.push({ label: `${shortLabel(c)} (${mod})`, value: v });
-      });
-    });
-    data.sort((a, b) => b.value - a.value);
-    Charts.bar(container, data, { max: 4 });
+    const data = itemMeans(rs, "financial_knowledge", "B").sort((a, b) => b.value - a.value);
+    Charts.bar(container, data, { max: 5 });
   }
 
   function drawDonut(rs) {
@@ -239,26 +238,37 @@
   function drawRing(rs) {
     const container = document.getElementById("chart-ring");
     if (!container) return;
-    const modId = "postgame";
-    if (!GEQ_MODULES[modId]) return;
-    const series = Object.keys(GEQ_MODULES[modId].components).map((c) => ({
-      label: shortLabel(c),
-      value: avgComponent(rs, modId, c) || 0
-    }));
+    const series = itemMeans(rs, "learning_outcomes", "D");
     if (series.length === 0) {
-      container.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:20px 0">Post-game module data not available.</p>`;
+      container.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:20px 0">Section D data not available.</p>`;
       return;
     }
-    Charts.ring(container, series, { max: 4 });
+    Charts.ring(container, series, { max: 5 });
   }
 
   function drawFunnel(rs) {
     const container = document.getElementById("chart-funnel");
     if (!container) return;
-    const data = Object.keys(GEQ_MODULES.core.components)
-      .map((c) => ({ label: shortLabel(c), value: avgComponent(rs, "core", c) || 0 }))
-      .sort((a, b) => b.value - a.value);
+    const data = itemMeans(rs, "financial_decision_making", "C").sort((a, b) => b.value - a.value);
     Charts.funnel(container, data);
+  }
+
+  function itemMeans(rs, modId, prefix) {
+    const mod = GEQ_MODULES[modId];
+    if (!mod) return [];
+    return mod.items
+      .map((text, i) => {
+        const vals = rs
+          .map((r) => r.answers && r.answers[modId] && r.answers[modId][i])
+          .filter((v) => typeof v === "number");
+        const value = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : NaN;
+        return { label: `${prefix}${i + 1} · ${truncate(text, 34)}`, value };
+      })
+      .filter((d) => isFinite(d.value));
+  }
+
+  function truncate(text, n) {
+    return text.length > n ? text.slice(0, n - 1).trim() + "\u2026" : text;
   }
 
   function avgComponent(rs, mod, comp) {
@@ -270,14 +280,10 @@
 
   function shortLabel(c) {
     return c
-      .replace("Sensory and Imaginative Immersion", "Immersion")
-      .replace("Tension/Annoyance", "Tension")
-      .replace("Psychological Involvement – Empathy", "Ps. Empathy")
-      .replace("Psychological Involvement – Negative Feelings", "Ps. Negative")
-      .replace("Behavioural Involvement", "Behavioural")
-      .replace("Returning to Reality", "Return to Reality")
-      .replace("Negative Experience", "Neg. Experience")
-      .replace("Positive Experience", "Pos. Experience");
+      .replace("Financial Knowledge and Concepts", "Fin. Knowledge")
+      .replace("Financial Decision Making", "Decision Making")
+      .replace("Learning Outcomes and Behavioral Awareness", "Learning Outcomes")
+      .replace("Learning Engagement", "Engagement");
   }
 
   function esc(s) {
@@ -305,20 +311,21 @@
     });
   }
 
-  // ===== FIXED CSV IMPORT: Now reads ALL rows, not just first =====
+  // ===== CSV IMPORT: reads ALL rows =====
   function csvToRecords(text) {
-    // Returns ARRAY of records (fixed: was only returning first row)
     const lines = text.trim().split(/\r?\n/);
     if (lines.length < 2) return [];
-    
+
     const header = parseCsvLine(lines[0]);
     const records = [];
-    
-    // Loop through ALL data rows
+    const modPattern = MODULE_IDS.join("|");
+    const itemRe = new RegExp(`^(${modPattern})_item(\\d+)$`);
+    const scoreRe = new RegExp(`^(${modPattern})_score_(.+)$`);
+
     for (let lineIdx = 1; lineIdx < lines.length; lineIdx++) {
       const values = parseCsvLine(lines[lineIdx]);
       if (values.every(v => !v.trim())) continue; // skip empty rows
-      
+
       const map = {};
       header.forEach((h, i) => (map[h] = values[i]));
 
@@ -336,21 +343,21 @@
 
       for (const key in map) {
         if (key.startsWith("demo_")) rec.demographics[key.slice(5)] = map[key];
-        else if (/^(core|ingame|social|postgame)_item\d+$/.test(key)) {
-          const m = key.match(/^(\w+)_item(\d+)$/);
+        else if (itemRe.test(key)) {
+          const m = key.match(itemRe);
           rec.answers[m[1]] = rec.answers[m[1]] || [];
           rec.answers[m[1]][Number(m[2]) - 1] = Number(map[key]);
-        } else if (/^(core|ingame|social|postgame)_score_/.test(key)) {
-          const m = key.match(/^(\w+)_score_(.+)$/);
+        } else if (scoreRe.test(key)) {
+          const m = key.match(scoreRe);
           const compName = restoreCompName(m[1], m[2]);
           rec.component_scores[m[1]] = rec.component_scores[m[1]] || {};
           rec.component_scores[m[1]][compName] = Number(map[key]);
         }
       }
-      
+
       records.push(rec);
     }
-    
+
     return records;
   }
 
@@ -368,7 +375,6 @@
     input.addEventListener("change", () => handleFiles(input.files));
   }
 
-  // ===== FIXED handleFiles: Process ALL records from CSV =====
   function handleFiles(files) {
     let added = 0;
     Array.from(files).forEach((f) => {
@@ -376,12 +382,10 @@
       reader.onload = () => {
         try {
           const text = reader.result;
-          // FIXED: csvToRecords returns array; JSON returns single object wrapped in array
           const recs = f.name.endsWith(".json")
             ? [JSON.parse(text)]
             : csvToRecords(text);
-          
-          // Process ALL records
+
           recs.forEach((rec) => {
             if (rec && rec.participant_id) {
               responses = responses.filter((r) => r.participant_id !== rec.participant_id);
@@ -389,7 +393,7 @@
               added += 1;
             }
           });
-          
+
           if (added > 0) {
             saveToLocal();
             render();

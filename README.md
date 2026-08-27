@@ -1,13 +1,13 @@
 # GEQ Toolkit
 
-An open-source, zero-backend web implementation of the **Game Experience Questionnaire (GEQ)** by IJsselsteijn, de Kort & Poels (2013) — for anyone running playtests or game user research...
+An open-source, zero-backend web questionnaire toolkit for game user research — originally built around the **Game Experience Questionnaire (GEQ)** by IJsselsteijn, de Kort & Poels (2013), and now configured for a custom **Debt Management Awareness** instrument used to evaluate *Escape The Debt*.
 
 Two pages, no server:
 
-- **`index.html`** — the participant questionnaire. Hero landing themed to your game, then the standardized GEQ items on the official 0–4 scale, with component scores computed per the published guidelines.
+- **`index.html`** — the participant questionnaire. Hero landing themed to your game, then the four debt-awareness sections on a 1–5 (Strongly Disagree → Strongly Agree) scale, with section scores computed automatically.
 - **`dashboard.html`** — the researcher dashboard. Passcode-protected. Six chart types, filterable participant table, CSV/JSON export, drag-and-drop import for responses from other machines.
 
-Built for my Final Year Project evaluation of *Escape The Debt* (UTeM), released so any game can use it.
+Built for my Final Year Project evaluation of *Escape The Debt* (UTeM), released so any game/study can adapt it.
 
 ## What's included
 
@@ -17,11 +17,11 @@ Built for my Final Year Project evaluation of *Escape The Debt* (UTeM), released
 | `dashboard.html` + `js/dashboard.js` + `js/charts.js` + `css/dashboard.css` | Researcher dashboard with 6 chart types |
 | `assets/` | Hero background image + game logo (swap for your own) |
 | `config.js` | **The only file you edit** — game name, images, modules, demographics, passcode |
-| `js/geq-items.js` | Full GEQ item bank: Core (33), In-game (14), Social Presence (17), Post-game (17) + scoring maps |
+| `js/geq-items.js` | Debt Management Awareness item bank: Learning Engagement (5), Financial Knowledge and Concepts (13), Financial Decision Making (5), Learning Outcomes and Behavioral Awareness (9) + scoring maps |
 | `webhook/Code.gs` | Optional Google Apps Script to collect responses into a Google Sheet |
 | `analysis/analyze_geq.py` | Aggregates response CSVs → stats, Cronbach's alpha, chart, text report |
 
-## Quick start (use it for your game)
+## Quick start (use it for your study)
 
 1. **Fork or clone** this repository.
 2. Replace `assets/hero-bg.png` and `assets/game-logo.png` with your own game's imagery (any web-friendly PNG/JPG works).
@@ -31,7 +31,12 @@ Built for my Final Year Project evaluation of *Escape The Debt* (UTeM), released
    researcher: "Your name / institution",
    tagline: "Your game's tagline",
    dashboardPasscode: "change-this",     // controls dashboard access
-   modules: ["core", "postgame"],         // pick what your study needs
+   modules: [
+     "learning_engagement",
+     "financial_knowledge",
+     "financial_decision_making",
+     "learning_outcomes"
+   ],                                     // pick what your study needs, in order
    askGender: true,                       // Male / Female chips on welcome
    ```
 4. **Deploy on GitHub Pages**: Settings → Pages → deploy from `main` branch, root folder. Your questionnaire is live at `https://yourname.github.io/repo-name/`.
@@ -52,28 +57,28 @@ For your PSM I'd recommend path 1 if you're testing on-campus in a lab, path 3 i
 
 ## The dashboard at a glance
 
-- **4 stat cards**: total participants, average completion time, mean Positive Affect, mean Negative Affect
+- **4 stat cards**: total participants, average completion time, mean Financial Knowledge score (Section B), mean Learning Outcomes score (Section D)
 - **6 charts** (all pure SVG, no libraries):
-  1. **Radar (Minimal)** — GEQ core profile: all 7 components on one spider chart
-  2. **Gauge (Dual arc gradients)** — composite satisfaction index
-  3. **Bar (Interactive)** — component means across modules, sorted, hover for values
+  1. **Radar (Minimal)** — debt awareness profile: all 4 section means on one spider chart
+  2. **Gauge (Dual arc gradients)** — overall debt awareness composite index
+  3. **Bar (Interactive)** — Financial Knowledge and Concepts, item-by-item means (Section B), sorted, hover for values
   4. **Donut** — gender split with legend
-  5. **Ring (Legend)** — post-game module comparison
-  6. **Funnel (Grid background)** — core components ranked high → low
+  5. **Ring (Legend)** — Learning Outcomes and Behavioral Awareness, item-by-item means (Section D)
+  6. **Funnel (Grid background)** — Financial Decision Making items ranked high → low (Section C)
 - **Filter bar** — filter every chart + table by gender in real time
 - **Participants table** — per-row CSV, JSON, or delete
 - **Export all** — one combined CSV of every response (top bar)
 - **Drag-and-drop import** — merge CSVs from other machines
 - **Passcode gate** — set `dashboardPasscode` in config (session-only unlock)
 
-## Choosing modules
+## Choosing modules (sections)
 
-- **`core`** — the main 33-item questionnaire. Measures Competence, Sensory & Imaginative Immersion, Flow, Tension/Annoyance, Challenge, Negative Affect, Positive Affect. Use this for almost every study.
-- **`postgame`** — 17 items on how players felt *after* stopping (Positive/Negative Experience, Tiredness, Returning to Reality). Administer right after core.
-- **`social`** — only if your game involves co-players or meaningful in-game characters (virtual, online, or co-located).
-- **`ingame`** — a 14-item short form of core, designed for repeated measurement at intervals *during* a session.
+- **`learning_engagement`** — Section A, 5 items on how engaging and instructive the game's puzzles felt.
+- **`financial_knowledge`** — Section B, 13 items covering compound interest, PTPTN loans, BNPL risk, credit utilization, debt prioritization, and budgeting concepts.
+- **`financial_decision_making`** — Section C, 5 items on confidence making and explaining debt-related decisions.
+- **`learning_outcomes`** — Section D, 9 items on real-world behavioral awareness and intentions after playing.
 
-All modules use the official response scale: `0 not at all · 1 slightly · 2 moderately · 3 fairly · 4 extremely`. Component scores are the mean of their items, exactly as in the published scoring guidelines.
+All sections use a 5-point Likert scale: `1 Strongly Disagree · 2 Disagree · 3 Neutral · 4 Agree · 5 Strongly Agree`. Section scores are the mean of their items.
 
 ## Collecting responses remotely (Google Sheets webhook)
 
@@ -107,13 +112,11 @@ The script accepts individual files, globs, a folder, or the single merged CSV e
 - The `dashboardPasscode` is client-side and stops casual access, not a determined attacker. Don't put personally identifying data in responses.
 - Get whatever ethics/consent approval your institution requires before running a study.
 
-## Citation & instrument license
+## Instrument notes
 
-The questionnaire items and scoring guidelines are the intellectual work of the original authors. If you use this in academic work, cite:
+The current `js/geq-items.js` item bank is a **custom Debt Management Awareness questionnaire** authored for the *Escape The Debt* evaluation — it is not the published GEQ instrument. Keep the item wording identical to your paper/PDF version of the questionnaire so digital and paper responses stay comparable. If you fork this toolkit for a GEQ-based study instead, restore the original GEQ item bank (Core/In-game/Social/Post-game) and cite:
 
 > IJsselsteijn, W. A., de Kort, Y. A. W., & Poels, K. (2013). *The Game Experience Questionnaire.* Technische Universiteit Eindhoven.
-
-The item wording in `js/geq-items.js` is reproduced verbatim for research use, as validity depends on exact wording — do not modify the items. The GEQ is distributed by TU/e for private study and research.
 
 The **code** in this repository (app, dashboard, charts, webhook, analysis) is released under the MIT License — see `LICENSE`.
 

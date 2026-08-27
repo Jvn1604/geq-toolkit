@@ -34,36 +34,21 @@ import matplotlib.pyplot as plt
 
 # Item -> component maps, matching js/geq-items.js (1-based item numbers).
 COMPONENTS = {
-    "core": {
-        "Competence": [2, 10, 15, 17, 21],
-        "Sensory and Imaginative Immersion": [3, 12, 18, 19, 27, 30],
-        "Flow": [5, 13, 25, 28, 31],
-        "Tension/Annoyance": [22, 24, 29],
-        "Challenge": [11, 23, 26, 32, 33],
-        "Negative Affect": [7, 8, 9, 16],
-        "Positive Affect": [1, 4, 6, 14, 20],
+    "learning_engagement": {
+        "Learning Engagement": [1, 2, 3, 4, 5],
     },
-    "ingame": {
-        "Competence": [2, 9],
-        "Sensory and Imaginative Immersion": [1, 4],
-        "Flow": [5, 10],
-        "Tension": [6, 8],
-        "Challenge": [12, 13],
-        "Negative Affect": [3, 7],
-        "Positive Affect": [11, 14],
+    "financial_knowledge": {
+        "Financial Knowledge and Concepts": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
     },
-    "social": {
-        "Psychological Involvement - Empathy": [1, 4, 8, 9, 10, 13],
-        "Psychological Involvement - Negative Feelings": [7, 11, 12, 16, 17],
-        "Behavioural Involvement": [2, 3, 5, 6, 14, 15],
+    "financial_decision_making": {
+        "Financial Decision Making": [1, 2, 3, 4, 5],
     },
-    "postgame": {
-        "Positive Experience": [1, 5, 7, 8, 12, 16],
-        "Negative Experience": [2, 4, 6, 11, 14, 15],
-        "Tiredness": [10, 13],
-        "Returning to Reality": [3, 9, 17],
+    "learning_outcomes": {
+        "Learning Outcomes and Behavioral Awareness": [1, 2, 3, 4, 5, 6, 7, 8, 9],
     },
 }
+
+MODULE_PATTERN = "|".join(COMPONENTS.keys())
 
 
 def load_responses(paths):
@@ -91,7 +76,7 @@ def load_responses(paths):
 def modules_present(df):
     mods = set()
     for col in df.columns:
-        m = re.match(r"(core|ingame|social|postgame)_item\d+$", col)
+        m = re.match(rf"({MODULE_PATTERN})_item\d+$", col)
         if m:
             mods.add(m.group(1))
     return sorted(mods)
@@ -148,9 +133,9 @@ def plot(stats, out_dir):
     ax.set_yticks(list(y))
     ax.set_yticklabels(labels, fontsize=8)
     ax.invert_yaxis()
-    ax.set_xlim(0, 4)
-    ax.set_xlabel("Component score (0 = not at all … 4 = extremely)")
-    ax.set_title(f"GEQ component means ± SD (N = {int(stats['n'].max())})")
+    ax.set_xlim(1, 5)
+    ax.set_xlabel("Component score (1 = strongly disagree … 5 = strongly agree)")
+    ax.set_title(f"Debt awareness component means ± SD (N = {int(stats['n'].max())})")
     ax.grid(axis="x", alpha=0.3)
     fig.tight_layout()
     path = os.path.join(out_dir, "geq_component_means.png")
@@ -159,7 +144,7 @@ def plot(stats, out_dir):
 
 
 def report(stats, out_dir):
-    lines = ["GEQ RESULTS SUMMARY", "=" * 50, ""]
+    lines = ["ESCAPE THE DEBT — DEBT MANAGEMENT AWARENESS RESULTS SUMMARY", "=" * 50, ""]
     for mod, group in stats.groupby("module", sort=False):
         lines.append(f"[{mod.upper()} MODULE]")
         for r in group.itertuples():
@@ -168,7 +153,7 @@ def report(stats, out_dir):
                 f"(N = {r.n}, alpha = {r.cronbach_alpha})"
             )
         lines.append("")
-    lines.append("Scale: 0 = not at all, 4 = extremely. Component score = mean of its items.")
+    lines.append("Scale: 1 = strongly disagree, 5 = strongly agree. Component score = mean of its items.")
     text = "\n".join(lines)
     with open(os.path.join(out_dir, "geq_report.txt"), "w") as f:
         f.write(text + "\n")
@@ -184,7 +169,7 @@ def main():
     df = load_responses(args.paths)
     stats = analyze(df, args.out)
     if stats.empty:
-        sys.exit("No GEQ item columns found — are these files from the GEQ Toolkit?")
+        sys.exit("No questionnaire item columns found — are these files from this toolkit?")
     plot(stats, args.out)
     report(stats, args.out)
 

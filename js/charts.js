@@ -64,7 +64,7 @@ function donutSlice(cx, cy, rOuter, rInner, start, end) {
 Charts.bar = function (container, data, opts) {
   opts = opts || {};
   const max = opts.max || 4;
-  const W = 640, H = 400;
+  const W = 640, H = opts.height || 400;
   const padL = 236, padR = 46, padT = 20, padB = 24;
   const plotW = W - padL - padR;
   const plotH = H - padT - padB;

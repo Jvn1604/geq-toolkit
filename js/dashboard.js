@@ -131,6 +131,7 @@
 
   function renderCharts(rs) {
     return `<div class="chart-grid">
+      <div class="panel span-6"><div class="kicker">00 · Bar (Overview)</div><h3>Overall summary — all sections (N = ${rs.length})</h3><div id="chart-summary"></div></div>
       <div class="panel span-4"><div class="kicker">01 · Radar (Minimal)</div><h3>Debt awareness profile — section means</h3><div id="chart-radar"></div></div>
       <div class="panel span-2"><div class="kicker">02 · Gauge (Dual arc)</div><h3>Overall debt awareness index</h3><div id="chart-gauge"></div></div>
       <div class="panel span-4"><div class="kicker">03 · Bar (Interactive)</div><h3>Financial knowledge — item means (Section B)</h3><div id="chart-bar"></div></div>
@@ -182,6 +183,7 @@
 
   function drawAllCharts(rs) {
     if (rs.length === 0) return;
+    drawSummary(rs);
     drawRadar(rs);
     drawGauge(rs);
     drawBar(rs);
@@ -195,6 +197,22 @@
     if (!mod) return NaN;
     const compName = Object.keys(mod.components)[0];
     return avgComponent(rs, modId, compName);
+  }
+
+  function drawSummary(rs) {
+    const container = document.getElementById("chart-summary");
+    if (!container) return;
+    const letters = {
+      learning_engagement: "A",
+      financial_knowledge: "B",
+      financial_decision_making: "C",
+      learning_outcomes: "D"
+    };
+    const data = MODULE_IDS.map((modId) => ({
+      label: `${letters[modId]} \u00b7 ${shortLabel(GEQ_MODULES[modId].name.replace(/^Section [A-D]: /, ""))}`,
+      value: sectionMean(rs, modId) || 0
+    }));
+    Charts.bar(container, data, { max: 5, height: 200 });
   }
 
   function drawRadar(rs) {

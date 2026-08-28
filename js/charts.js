@@ -59,17 +59,52 @@ function donutSlice(cx, cy, rOuter, rInner, start, end) {
           L ${si.x} ${si.y}
           A ${rInner} ${rInner} 0 ${large} 1 ${ei.x} ${ei.y} Z`;
 }
+/* Word-wrap text into up to maxLines lines of ~charsPerLine chars each,
+ * so labels are readable in full rather than hard-truncated mid-word. */
+function wrapLines(text, charsPerLine, maxLines) {
+  const words = String(text).trim().split(/\s+/);
+  const lines = [];
+  let cur = "";
+  for (const w of words) {
+    const test = cur ? cur + " " + w : w;
+    if (test.length > charsPerLine && cur) {
+      lines.push(cur);
+      cur = w;
+      if (lines.length === maxLines) { cur = ""; break; }
+    } else {
+      cur = test;
+    }
+  }
+  if (cur) lines.push(cur);
+  if (lines.length > maxLines) lines.length = maxLines;
+
+  const consumedLen = lines.join(" ").length;
+  if (consumedLen < String(text).trim().length && lines.length) {
+    let last = lines[lines.length - 1];
+    if (last.length > charsPerLine - 1) last = last.slice(0, charsPerLine - 1).trim();
+    lines[lines.length - 1] = last + "\u2026";
+  }
+  return lines.length ? lines : [""];
+}
 
 /* ---------------- 1. BAR CHART - INTERACTIVE ---------------- */
 Charts.bar = function (container, data, opts) {
   opts = opts || {};
   const max = opts.max || 4;
-  const W = 640, H = opts.height || 400;
-  const padL = 236, padR = 46, padT = 20, padB = 24;
+  const W = 640;
+  const padL = opts.padL || 250, padR = 46, padT = 20, padB = 24;
   const plotW = W - padL - padR;
-  const plotH = H - padT - padB;
-  const step = plotH / data.length;
-  const barH = Math.max(16, step - 8);
+  const fontSize = 11, lineHeight = 13;
+  const maxLines = opts.maxLines || 4;
+  const charsPerLine = opts.charsPerLine || Math.max(14, Math.floor((padL - 14) / (fontSize * 0.55)));
+
+  const rows = data.map((d) => ({
+    ...d,
+    lines: wrapLines(d.label, charsPerLine, maxLines)
+  }));
+  const rowHeights = rows.map((r) => Math.max(30, r.lines.length * lineHeight + 16));
+  const plotH = rowHeights.reduce((a, b) => a + b, 0);
+  const H = padT + padB + plotH;
 
   const gridLines = [];
   for (let i = 0; i <= max; i++) {
@@ -78,19 +113,27 @@ Charts.bar = function (container, data, opts) {
     gridLines.push(`<text x="${x}" y="${H - 6}" text-anchor="middle" fill="${CHART_THEME.muted}" font-family="IBM Plex Mono" font-size="10.5">${i}</text>`);
   }
 
-  const bars = data.map((d, i) => {
-    const y = padT + i * step + (step - barH) / 2;
+  let cursorY = padT;
+  const bars = rows.map((d, i) => {
+    const rowH = rowHeights[i];
+    const barH = Math.min(22, rowH - 12);
+    const barY = cursorY + (rowH - barH) / 2;
     const w = (d.value / max) * plotW;
     const color = d.color || CHART_PALETTE[i % CHART_PALETTE.length];
-    return `
+    const textBlockH = d.lines.length * lineHeight;
+    const firstLineY = cursorY + rowH / 2 - textBlockH / 2 + lineHeight - 3;
+    const tspans = d.lines.map((line, li) => `<tspan x="${padL - 14}" y="${firstLineY + li * lineHeight}">${esc(line)}</tspan>`).join("");
+    const rowSvg = `
       <g class="bar-row" data-label="${esc(d.label)}" data-value="${d.value}">
-        <text x="${padL - 14}" y="${y + barH / 2 + 4}" text-anchor="end" fill="${CHART_THEME.ink}" font-family="IBM Plex Sans" font-size="11.5">${esc(d.label)}</text>
-        <rect x="${padL}" y="${y}" width="${plotW}" height="${barH}" fill="${CHART_THEME.grid}" rx="3"/>
-        <rect x="${padL}" y="${y}" width="${w}" height="${barH}" fill="${color}" rx="3">
+        <text text-anchor="end" fill="${CHART_THEME.ink}" font-family="IBM Plex Sans" font-size="${fontSize}">${tspans}</text>
+        <rect x="${padL}" y="${barY}" width="${plotW}" height="${barH}" fill="${CHART_THEME.grid}" rx="3"/>
+        <rect x="${padL}" y="${barY}" width="${w}" height="${barH}" fill="${color}" rx="3">
           <title>${esc(d.label)}: ${d.value.toFixed(2)}</title>
         </rect>
-        <text x="${padL + w + 8}" y="${y + barH / 2 + 4}" fill="${CHART_THEME.ink}" font-family="IBM Plex Mono" font-size="11.5">${d.value.toFixed(2)}</text>
+        <text x="${padL + w + 8}" y="${barY + barH / 2 + 4}" fill="${CHART_THEME.ink}" font-family="IBM Plex Mono" font-size="11.5">${d.value.toFixed(2)}</text>
       </g>`;
+    cursorY += rowH;
+    return rowSvg;
   }).join("");
 
   container.innerHTML = `${svg(W, H)}
@@ -100,12 +143,19 @@ Charts.bar = function (container, data, opts) {
 };
 
 /* ---------------- 2. FUNNEL CHART - GRID BACKGROUND ---------------- */
-Charts.funnel = function (container, data) {
-  const W = 480, H = 320;
-  const padT = 20, padB = 20, padX = 60;
-  const plotH = H - padT - padB;
-  const stepH = plotH / data.length;
+Charts.funnel = function (container, data, opts) {
+  opts = opts || {};
+  const W = 480;
+  const padT = 20, padB = 20, padX = 40;
+  const fontSize = 11, lineHeight = 13;
+  const maxLines = opts.maxLines || 4;
+  const charsPerLine = opts.charsPerLine || 42;
   const maxV = Math.max(...data.map((d) => d.value), 0.0001);
+
+  const rows = data.map((d) => ({ ...d, lines: wrapLines(d.label, charsPerLine, maxLines) }));
+  const rowHeights = rows.map((r) => Math.max(56, r.lines.length * lineHeight + 30));
+  const plotH = rowHeights.reduce((a, b) => a + b, 0);
+  const H = padT + padB + plotH;
 
   // Grid background
   const grid = [];
@@ -116,18 +166,24 @@ Charts.funnel = function (container, data) {
     grid.push(`<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="${CHART_THEME.grid}" stroke-width="1"/>`);
   }
 
-  const trapezoids = data.map((d, i) => {
-    const top = padT + i * stepH;
+  let cursorY = padT;
+  const trapezoids = rows.map((d, i) => {
+    const stepH = rowHeights[i];
+    const top = cursorY;
     const bot = top + stepH - 6;
     const wTop = (d.value / maxV) * (W - padX * 2);
-    const wBot = i + 1 < data.length ? (data[i + 1].value / maxV) * (W - padX * 2) : wTop * 0.6;
+    const wBot = i + 1 < rows.length ? (rows[i + 1].value / maxV) * (W - padX * 2) : wTop * 0.6;
     const cx = W / 2;
     const color = d.color || CHART_PALETTE[i % CHART_PALETTE.length];
+    const textBlockH = d.lines.length * lineHeight;
+    const labelStartY = top + stepH / 2 - textBlockH / 2 - 4;
+    const tspans = d.lines.map((line, li) => `<tspan x="${cx}" y="${labelStartY + li * lineHeight}">${esc(line)}</tspan>`).join("");
+    cursorY += stepH;
     return `
       <polygon points="${cx - wTop/2},${top} ${cx + wTop/2},${top} ${cx + wBot/2},${bot} ${cx - wBot/2},${bot}"
                fill="${color}" opacity="0.85"><title>${esc(d.label)}: ${d.value.toFixed(2)}</title></polygon>
-      <text x="${cx}" y="${top + stepH/2 - 4}" text-anchor="middle" fill="${CHART_THEME.ink}" font-family="IBM Plex Sans" font-size="11" font-weight="500">${esc(d.label)}</text>
-      <text x="${cx}" y="${top + stepH/2 + 12}" text-anchor="middle" fill="${CHART_THEME.ink}" font-family="IBM Plex Mono" font-size="12" opacity="0.75">${d.value.toFixed(2)}</text>`;
+      <text text-anchor="middle" fill="${CHART_THEME.ink}" font-family="IBM Plex Sans" font-size="${fontSize}" font-weight="500">${tspans}</text>
+      <text x="${cx}" y="${labelStartY + textBlockH + 14}" text-anchor="middle" fill="${CHART_THEME.ink}" font-family="IBM Plex Mono" font-size="12" opacity="0.75">${d.value.toFixed(2)}</text>`;
   }).join("");
 
   container.innerHTML = `${svg(W, H)}
@@ -211,13 +267,21 @@ Charts.ring = function (container, series, opts) {
   opts = opts || {};
   const max = opts.max || 4;
   const n = series.length;
-  const W = 460;
-  const H = Math.max(260, 44 + n * 30 + 24);
+  const W = 480;
+  const fontSize = 11, lineHeight = 13;
+  const maxLines = opts.maxLines || 4;
+  const legendX = 235;
+  const charsPerLine = opts.charsPerLine || Math.max(14, Math.floor((W - legendX - 18 - 10) / (fontSize * 0.55)));
+
+  const rows = series.map((s) => ({ ...s, lines: wrapLines(s.label, charsPerLine, maxLines) }));
+  const rowHeights = rows.map((r) => Math.max(30, r.lines.length * lineHeight + 18));
+  const legendH = rowHeights.reduce((a, b) => a + b, 0) + 24;
+  const H = Math.max(260, legendH);
   const cx = 115, cy = H / 2;
   const rMax = 92, rMin = 34;
   const step = n > 1 ? (rMax - rMin) / (n - 1) : 0;
 
-  const arcs = series.map((s, i) => {
+  const arcs = rows.map((s, i) => {
     const r = rMax - i * step;
     const pct = Math.max(0, Math.min(1, s.value / max));
     const endA = -90 + pct * 360;
@@ -230,13 +294,18 @@ Charts.ring = function (container, series, opts) {
         fill="none" stroke="${color}" stroke-width="9" stroke-linecap="round"/>`;
   }).join("");
 
-  const legend = series.map((s, i) => {
+  let cursorY = 18;
+  const legend = rows.map((s, i) => {
+    const rowH = rowHeights[i];
     const color = s.color || CHART_PALETTE[i % CHART_PALETTE.length];
-    return `<g transform="translate(232, ${34 + i * 30})">
+    const tspans = s.lines.map((line, li) => `<tspan x="18" y="${9 + li * lineHeight}">${esc(line)}</tspan>`).join("");
+    const g = `<g transform="translate(${legendX}, ${cursorY})">
       <rect width="10" height="10" fill="${color}" rx="2"/>
-      <text x="18" y="9" fill="${CHART_THEME.ink}" font-family="IBM Plex Sans" font-size="11.5">${esc(s.label)}</text>
-      <text x="18" y="24" fill="${CHART_THEME.muted}" font-family="IBM Plex Mono" font-size="10">${s.value.toFixed(2)} / ${max}</text>
+      <text fill="${CHART_THEME.ink}" font-family="IBM Plex Sans" font-size="${fontSize}">${tspans}</text>
+      <text x="18" y="${9 + s.lines.length * lineHeight + 3}" fill="${CHART_THEME.muted}" font-family="IBM Plex Mono" font-size="10">${s.value.toFixed(2)} / ${max}</text>
     </g>`;
+    cursorY += rowH;
+    return g;
   }).join("");
 
   container.innerHTML = `${svg(W, H)}

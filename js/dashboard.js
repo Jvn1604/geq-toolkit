@@ -212,7 +212,7 @@
       label: `${letters[modId]} \u00b7 ${shortLabel(GEQ_MODULES[modId].name.replace(/^Section [A-D]: /, ""))}`,
       value: sectionMean(rs, modId) || 0
     }));
-    Charts.bar(container, data, { max: 5, height: 200 });
+    Charts.bar(container, data, { max: 5, maxLines: 1 });
   }
 
   function drawRadar(rs) {
@@ -236,7 +236,7 @@
   function drawBar(rs) {
     const container = document.getElementById("chart-bar");
     if (!container) return;
-    const data = itemMeans(rs, "financial_knowledge", "B", 26).sort((a, b) => b.value - a.value);
+    const data = itemMeans(rs, "financial_knowledge", "B").sort((a, b) => b.value - a.value);
     Charts.bar(container, data, { max: 5 });
   }
 
@@ -256,7 +256,7 @@
   function drawRing(rs) {
     const container = document.getElementById("chart-ring");
     if (!container) return;
-    const series = itemMeans(rs, "learning_outcomes", "D", 28);
+    const series = itemMeans(rs, "learning_outcomes", "D");
     if (series.length === 0) {
       container.innerHTML = `<p style="color:var(--muted);font-size:13px;padding:20px 0">Section D data not available.</p>`;
       return;
@@ -267,27 +267,22 @@
   function drawFunnel(rs) {
     const container = document.getElementById("chart-funnel");
     if (!container) return;
-    const data = itemMeans(rs, "financial_decision_making", "C", 30).sort((a, b) => b.value - a.value);
+    const data = itemMeans(rs, "financial_decision_making", "C").sort((a, b) => b.value - a.value);
     Charts.funnel(container, data);
   }
 
-  function itemMeans(rs, modId, prefix, maxLen) {
+  function itemMeans(rs, modId, prefix) {
     const mod = GEQ_MODULES[modId];
     if (!mod) return [];
-    const n = maxLen || 30;
     return mod.items
       .map((text, i) => {
         const vals = rs
           .map((r) => r.answers && r.answers[modId] && r.answers[modId][i])
           .filter((v) => typeof v === "number");
         const value = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : NaN;
-        return { label: `${prefix}${i + 1} \u00b7 ${truncate(text, n)}`, value };
+        return { label: `${prefix}${i + 1} \u00b7 ${text}`, value };
       })
       .filter((d) => isFinite(d.value));
-  }
-
-  function truncate(text, n) {
-    return text.length > n ? text.slice(0, n - 1).trim() + "\u2026" : text;
   }
 
   function avgComponent(rs, mod, comp) {

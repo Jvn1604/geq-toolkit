@@ -64,18 +64,18 @@ function donutSlice(cx, cy, rOuter, rInner, start, end) {
 Charts.bar = function (container, data, opts) {
   opts = opts || {};
   const max = opts.max || 4;
-  const W = 640, H = 320;
-  const padL = 140, padR = 24, padT = 20, padB = 24;
+  const W = 640, H = 400;
+  const padL = 236, padR = 46, padT = 20, padB = 24;
   const plotW = W - padL - padR;
   const plotH = H - padT - padB;
   const step = plotH / data.length;
-  const barH = Math.max(14, step - 10);
+  const barH = Math.max(16, step - 8);
 
   const gridLines = [];
   for (let i = 0; i <= max; i++) {
     const x = padL + (i / max) * plotW;
     gridLines.push(`<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + plotH}" stroke="${CHART_THEME.grid}" stroke-width="1"/>`);
-    gridLines.push(`<text x="${x}" y="${H - 6}" text-anchor="middle" fill="${CHART_THEME.muted}" font-family="IBM Plex Mono" font-size="10">${i}</text>`);
+    gridLines.push(`<text x="${x}" y="${H - 6}" text-anchor="middle" fill="${CHART_THEME.muted}" font-family="IBM Plex Mono" font-size="10.5">${i}</text>`);
   }
 
   const bars = data.map((d, i) => {
@@ -84,12 +84,12 @@ Charts.bar = function (container, data, opts) {
     const color = d.color || CHART_PALETTE[i % CHART_PALETTE.length];
     return `
       <g class="bar-row" data-label="${esc(d.label)}" data-value="${d.value}">
-        <text x="${padL - 12}" y="${y + barH / 2 + 4}" text-anchor="end" fill="${CHART_THEME.ink}" font-family="IBM Plex Sans" font-size="12">${esc(d.label)}</text>
+        <text x="${padL - 14}" y="${y + barH / 2 + 4}" text-anchor="end" fill="${CHART_THEME.ink}" font-family="IBM Plex Sans" font-size="11.5">${esc(d.label)}</text>
         <rect x="${padL}" y="${y}" width="${plotW}" height="${barH}" fill="${CHART_THEME.grid}" rx="3"/>
         <rect x="${padL}" y="${y}" width="${w}" height="${barH}" fill="${color}" rx="3">
           <title>${esc(d.label)}: ${d.value.toFixed(2)}</title>
         </rect>
-        <text x="${padL + w + 6}" y="${y + barH / 2 + 4}" fill="${CHART_THEME.ink}" font-family="IBM Plex Mono" font-size="11">${d.value.toFixed(2)}</text>
+        <text x="${padL + w + 8}" y="${y + barH / 2 + 4}" fill="${CHART_THEME.ink}" font-family="IBM Plex Mono" font-size="11.5">${d.value.toFixed(2)}</text>
       </g>`;
   }).join("");
 
@@ -210,11 +210,12 @@ Charts.donut = function (container, data) {
 Charts.ring = function (container, series, opts) {
   opts = opts || {};
   const max = opts.max || 4;
-  const W = 340, H = 260;
-  const cx = 130, cy = H / 2;
-  const rings = series.length;
-  const rMax = 100, rMin = 40;
-  const step = (rMax - rMin) / rings;
+  const n = series.length;
+  const W = 460;
+  const H = Math.max(260, 44 + n * 30 + 24);
+  const cx = 115, cy = H / 2;
+  const rMax = 92, rMin = 34;
+  const step = n > 1 ? (rMax - rMin) / (n - 1) : 0;
 
   const arcs = series.map((s, i) => {
     const r = rMax - i * step;
@@ -222,16 +223,16 @@ Charts.ring = function (container, series, opts) {
     const endA = -90 + pct * 360;
     const color = s.color || CHART_PALETTE[i % CHART_PALETTE.length];
     return `
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${CHART_THEME.grid}" stroke-width="10"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${CHART_THEME.grid}" stroke-width="9"/>
       <path d="${pct >= 0.999
         ? `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx - 0.01} ${cy - r} Z`
         : describeCircleArc(cx, cy, r, -90, endA)}"
-        fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round"/>`;
+        fill="none" stroke="${color}" stroke-width="9" stroke-linecap="round"/>`;
   }).join("");
 
   const legend = series.map((s, i) => {
     const color = s.color || CHART_PALETTE[i % CHART_PALETTE.length];
-    return `<g transform="translate(250, ${40 + i * 28})">
+    return `<g transform="translate(232, ${34 + i * 30})">
       <rect width="10" height="10" fill="${color}" rx="2"/>
       <text x="18" y="9" fill="${CHART_THEME.ink}" font-family="IBM Plex Sans" font-size="11.5">${esc(s.label)}</text>
       <text x="18" y="24" fill="${CHART_THEME.muted}" font-family="IBM Plex Mono" font-size="10">${s.value.toFixed(2)} / ${max}</text>
@@ -255,8 +256,8 @@ Charts.ring = function (container, series, opts) {
 Charts.radar = function (container, data, opts) {
   opts = opts || {};
   const max = opts.max || 4;
-  const W = 420, H = 380;
-  const cx = W / 2, cy = H / 2 + 8, r = 130;
+  const W = 480, H = 380;
+  const cx = W / 2, cy = H / 2 + 8, r = 95;
   const n = data.length;
 
   // grid rings
@@ -270,10 +271,10 @@ Charts.radar = function (container, data, opts) {
   const spokes = data.map((d, i) => {
     const angle = (i / n) * 360;
     const p = polarToXY(cx, cy, r, angle);
-    const pl = polarToXY(cx, cy, r + 20, angle);
+    const pl = polarToXY(cx, cy, r + 26, angle);
     return `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="${CHART_THEME.grid}" stroke-width="1"/>
       <text x="${pl.x}" y="${pl.y + 4}" text-anchor="${pl.x > cx + 5 ? "start" : pl.x < cx - 5 ? "end" : "middle"}"
-            fill="${CHART_THEME.ink}" font-family="IBM Plex Sans" font-size="10.5" font-weight="500">${esc(d.label)}</text>`;
+            fill="${CHART_THEME.ink}" font-family="IBM Plex Sans" font-size="11.5" font-weight="500">${esc(d.label)}</text>`;
   }).join("");
 
   const pts = data.map((d, i) => {
